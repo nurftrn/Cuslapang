@@ -63,17 +63,17 @@ export default function CourtsPage() {
     <div className="px-8 md:px-60 py-6">
 
       {/* TITLE */}
-      <h1 className="text-2xl font-bold mb-6">
+      <h1 className="text-xl font-bold mb-6">
         {sport.charAt(0).toUpperCase() + sport.slice(1)} Courts in {city?.charAt(0).toUpperCase() + city?.slice(1)}
       </h1>
 
       {/* GRID */}
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-5">
+      <div className="grid grid-cols-3 md:grid-cols-4 gap-5">
 
         {filteredCourts.map((court) => (
           <div
             key={court.id}
-            onClick={() => router.push(`/courts/${court.id}`)}
+            onClick={() => router.push(`/courts/${court.id}?city=${city}&sport=${sport}`)}
             className="cursor-pointer rounded-2xl overflow-hidden shadow hover:shadow-lg transition hover:scale-[1.02]"
           >
             {/* IMAGE */}
@@ -86,15 +86,15 @@ export default function CourtsPage() {
 
             {/* INFO */}
             <div className="p-4">
-              <h3 className="font-semibold text-lg">
+              <h3 className="font-semibold text-base">
                 {court.name}
               </h3>
 
-              <p className="text-sm text-gray-500">
+              <p className="text-xs text-gray-500">
                 {court.city}
               </p>
 
-              <p className="text-green-600 font-medium mt-2 text-right">
+              <p className="text-green-600 font-medium mt-2 text-sm text-right">
                 {court.price}
               </p>
             </div>

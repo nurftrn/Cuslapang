@@ -7,62 +7,190 @@ export default function CheckoutPage() {
   const params = useSearchParams()
   const time = params.get("time")
   const courtName = params.get("court")
+
   const [loading, setLoading] = useState(false)
+  const [copied, setCopied] = useState(false)
+  const [selectedCategory, setSelectedCategory] = useState("")
+  const [selectedPayment, setSelectedPayment] = useState("")
+
+  // Format date
+  const selectedDate = new Date()
+
+  const day = selectedDate.toLocaleDateString("en-US", {
+    weekday: "long",
+  })
+
+  const date = selectedDate.toLocaleDateString("en-US", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  })
+
+  // Handle Copy
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText("1234 5678 9012") // ntr ubah panggil va
+      setCopied(true)
+
+      setTimeout(() => setCopied(false), 1500)
+    } catch (err) {
+      console.error("Failed to copy: ", err)
+    }
+  }
+
+  // Payment
+  const paymentMethods = [
+    {
+      type: "Bank Transfer",
+      methods: ["BCA", "Mandiri"],
+    },
+    {
+      type: "E-Wallet",
+      methods: ["GoPay", "OVO", "DANA"],
+    },
+    {
+      type: "QRIS",
+      methods: ["QRIS"],
+    },
+  ]
+
+  const getPaymentInfo = () => {
+    if (selectedCategory === "QRIS") return "Scan QR Code"
+    if (["GoPay", "OVO", "DANA"].includes(selectedPayment)) return "Use your phone number"
+    if (selectedPayment === "BCA") return "1234 5678 9012"
+    if (selectedPayment === "Mandiri") return "9876 5432 1098"
+    return "-"
+  }
 
   return (
-    <div className="px-60 py-10 grid grid-cols-2 gap-8">
+    <div className="max-w-[1400px] mx-auto py-10 grid grid-cols-2 gap-8">
 
       {/* LEFT — BOOKING INFO */}
       <div className="bg-white rounded-2xl shadow p-6">
 
         <img
           src="/images/hero.jpeg"
-          className="w-full h-100 object-cover rounded-xl mb-4"
+          className="w-full h-50 object-cover rounded-xl mb-4"
         />
 
-        <h2 className="text-2xl font-bold mb-4">
+        <h2 className="text-xl font-bold mb-4">
           {courtName}
         </h2>
 
-        <div className="space-y-3 text-md">
+        {/* DETAIL */}
+        <div className="grid grid-cols-2 gap-y-3 text-sm">
+          <span className="text-gray-500">Day</span>
+          <span className="text-right font-medium">{day}</span>
 
-          <div className="flex justify-between">
-            <span>Date</span>
-            <span>Sunday, 12 April 2026</span>
-          </div>
+          <span className="text-gray-500">Date</span>
+          <span className="text-right font-medium">{date}</span>
 
-          <div className="flex justify-between">
-            <span>Time</span>
-            <span>{time}</span>
-          </div>
+          <span className="text-gray-500">Time</span>
+          <span className="text-right font-medium">{time || "-"}</span>
 
-          <div className="flex justify-between font-semibold text-lg">
-            <span>Total</span>
-            <span>Rp180.000</span>
-          </div>
+          <span className="text-gray-500">Duration</span>
+          <span className="text-right font-medium">60 Minutes</span>
+        </div>
 
+        {/* DIVIDER */}
+        <div className="border-t my-5 border-black/50"></div>
+
+        {/* TOTAL */}
+        <div className="flex justify-between font-semibold text-base">
+          <span>Total</span>
+          <span>Rp180.000</span>
         </div>
       </div>
 
       {/* RIGHT — PAYMENT */}
       <div className="bg-white rounded-2xl shadow p-6">
-
         <h2 className="text-lg font-semibold mb-4">
           Payment Method
         </h2>
 
-        {/* BANK OPTIONS */}
-        <div className="flex gap-4 mb-6">
+        {/* CHOOSE CATEGORY */}
+        <div className="grid grid-cols-3 gap-4 mb-6">
+          {["Bank", "E-Wallet", "QRIS"].map((cat) => {
+            const active = selectedCategory === cat
 
-          <div className="flex-1 border border-gray-300 rounded-xl p-4 text-center cursor-pointer hover:border-green-500">
-            <p className="font-bold">BCA</p>
-          </div>
-
-          <div className="flex-1 border border-gray-300 rounded-xl p-4 text-center cursor-pointer hover:border-green-500">
-            <p className="font-bold">Mandiri</p>
-          </div>
-
+            return (
+              <div
+                key={cat}
+                onClick={() => {
+                  setSelectedCategory(cat)
+                  setSelectedPayment("") // reset method
+                }}
+                className={`p-4 rounded-xl text-center cursor-pointer border transition
+                ${
+                  active
+                    ? "bg-teal-600 text-white "
+                    : "border-gray-300 hover:border-teal-400"
+                }`}
+              >
+                <p className="font-semibold">{cat}</p>
+              </div>
+            )
+          })}
         </div>
+        
+        {/* BANK OPTIONS */}
+        {selectedCategory === "Bank" && (
+          <div className="grid grid-cols-2 gap-4 mb-4">
+            {["BCA", "Mandiri"].map((method) => (
+              <div
+                key={method}
+                onClick={() => setSelectedPayment(method)}
+                className={`p-4 rounded-xl text-center border cursor-pointer
+                ${
+                  selectedPayment === method
+                    ? "border-teal-600 bg-teal-50"
+                    : "border-gray-300"
+                }`}
+              >
+                {method}
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* E-WALLET OPTIONS */}
+        {selectedCategory === "E-Wallet" && (
+          <div className="grid grid-cols-3 gap-4 mb-4">
+            {["GoPay", "OVO", "DANA"].map((method) => (
+              <div
+                key={method}
+                onClick={() => setSelectedPayment(method)}
+                className={`p-4 rounded-xl text-center border cursor-pointer
+                ${
+                  selectedPayment === method
+                    ? "border-teal-600 bg-teal-50"
+                    : "border-gray-300"
+                }`}
+              >
+                {method}
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* QRIS OPTIONS */}
+        {selectedCategory === "QRIS" && (
+          <div className="flex justify-center mb-4">
+            <div className="text-center">
+
+              <img
+                src="/images/qris.png"
+                alt="QRIS"
+                className="w-40 h-40 object-contain mx-auto mb-3"
+              />
+
+              <p className="text-sm text-gray-500">
+                Scan this QR code to pay
+              </p>
+
+            </div>
+          </div>
+        )}
 
         {/* VA */}
         <div className="mb-4">
@@ -71,9 +199,9 @@ export default function CheckoutPage() {
           </label>
 
           <div className="flex justify-between items-center border border-gray-300 p-3 rounded-lg mt-1">
-            <span>1234 5678 9012</span>
-            <button className="text-blue-500 text-sm">
-              Copy
+            <span>{getPaymentInfo()}</span>
+            <button className={`text-sm font-medium transition ${copied ? "text-green-600" : "text-blue-500 hover:underline"}`} onClick={handleCopy}>
+              {copied ? "Copied!" : "Copy"}
             </button>
           </div>
         </div>
@@ -86,7 +214,7 @@ export default function CheckoutPage() {
 
           <div className="bg-red-100 text-red-600 p-3 rounded-lg mt-1 flex justify-between">
             <span>Rp180.000</span>
-            <span>Unpaid</span>
+            <span className="text-sm">Unpaid</span>
           </div>
         </div>
 
@@ -94,13 +222,13 @@ export default function CheckoutPage() {
         <div className="space-y-3 mt-6">
 
           <button
-            className="w-full bg-green-600 text-white py-3 rounded-lg hover:bg-green-700"
+            disabled={!selectedPayment} className="w-full bg-teal-600 text-white py-3 rounded-lg hover:bg-teal-700"
           >
             Check Status
           </button>
 
           <button
-            className="w-full border py-3 rounded-lg hover:bg-gray-100"
+            disabled={!selectedPayment} className="w-full border py-3 rounded-lg hover:bg-gray-100"
           >
             Upload Proof
           </button>

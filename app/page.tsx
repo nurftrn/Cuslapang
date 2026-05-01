@@ -22,16 +22,16 @@ export default function Home() {
     <div className="px-28 py-6">
       
       {/* HERO */}
-      <div className="relative rounded-2xl overflow-hidden h-[500px] mb-10">
+      <div className="relative rounded-2xl overflow-hidden h-[300px] mb-10">
         <img src="/images/hero.jpeg" alt="Hero Sports Field" className="w-full h-full object-cover"/>
 
-        {/* Overlay */}
+        {/* OVERLAY */}
         <div className="absolute inset-0 bg-black/50 flex flex-col justify-center px-10 text-white">
-          <h1 className="text-5xl font-bold mb-3">Book Sports Fields Online,<br />Fast & Easy</h1>
-          <p className="mb-5 text-lg opacity-90">No need to visit in person, everything can be done here.</p>
+          <h1 className="text-4xl font-bold mb-3">Book Sports Fields Online,<br />Fast & Easy</h1>
+          <p className="mb-5 text-base opacity-90">No need to visit in person, everything can be done here.</p>
 
           <div className="flex gap-3">
-            <button onClick={() => setShowModal(true)} className="bg-white text-black px-5 py-2 rounded-full font-medium hover:scale-105 transition">
+            <button onClick={() => setShowModal(true)} className="bg-white text-black px-5 py-2 rounded-full text-base hover:scale-105 transition">
               Book Now
             </button>
 
@@ -42,12 +42,12 @@ export default function Home() {
         </div>
       </div>
 
-      <h1 className="text-2xl font-bold mb-4">What do you want to play?</h1>
+      <h1 className="text-xl font-bold mb-4">What do you want to play?</h1>
       {/* CATEGORIES */}
-      <div className="grid grid-cols-5 gap-6">
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
         {sports.map((sport, s) => (
           <div key={s} className="bg-gradient-to-br from-teal-200 to-yellow-200 p-6 rounded-2xl shadow hover:shadow-lg hover:scale-105 transition cursor-pointer"  onClick={() => {setSelectedSport(sport.name.toLowerCase()), setShowModal(true)}}>
-            <h3 className="font-semibold text-xl mb-10">
+            <h3 className="font-semibold text-base mb-10">
               {sport.name}
             </h3>
             <div className="text-9xl text-right">
