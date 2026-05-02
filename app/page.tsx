@@ -19,7 +19,7 @@ export default function Home() {
   const [selectedSport, setSelectedSport] = useState("")
 
   return (
-    <div className="px-28 py-6">
+    <div className="px-8 md:px-28 py-6">
       
       {/* HERO */}
       <div className="relative rounded-2xl overflow-hidden h-[300px] mb-10">
@@ -34,17 +34,13 @@ export default function Home() {
             <button onClick={() => setShowModal(true)} className="bg-white text-black px-5 py-2 rounded-full text-base hover:scale-105 transition">
               Book Now
             </button>
-
-            <button className="border border-white px-5 py-2 rounded-full hover:bg-white hover:text-black transition">
-              Explore
-            </button>
           </div>
         </div>
       </div>
 
       <h1 className="text-xl font-bold mb-4">What do you want to play?</h1>
       {/* CATEGORIES */}
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
+      <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
         {sports.map((sport, s) => (
           <div key={s} className="bg-gradient-to-br from-teal-200 to-yellow-200 p-6 rounded-2xl shadow hover:shadow-lg hover:scale-105 transition cursor-pointer"  onClick={() => {setSelectedSport(sport.name.toLowerCase()), setShowModal(true)}}>
             <h3 className="font-semibold text-base mb-10">

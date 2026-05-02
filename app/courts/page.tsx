@@ -60,7 +60,7 @@ export default function CourtsPage() {
   })
 
   return (
-    <div className="px-8 md:px-60 py-6">
+    <div className="px-8 md:px-28 py-6">
 
       {/* TITLE */}
       <h1 className="text-xl font-bold mb-6">

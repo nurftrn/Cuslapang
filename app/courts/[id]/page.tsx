@@ -51,10 +51,10 @@ export default function CourtDetail() {
   }
 
   return (
-    <div className="px-60 py-6">
+    <div className="px-8 md:px-28 py-6">
 
       {/* HERO */}
-      <div className="relative h-[400px] rounded-2xl overflow-hidden mb-2">
+      <div className="relative h-[400px] rounded-2xl overflow-hidden">
         <img src={court.image} className="w-full h-full object-cover"/>
 
         {/* OVERLAY */}
@@ -136,7 +136,7 @@ export default function CourtDetail() {
             </div>
           
           {/* SCHEDULE */}
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-3 md:grid-cols-3 lg:grid-cols-5 gap-4 text-center">
 
             {schedules.map((time, i) => {
               const active = selectedTime === time
@@ -196,7 +196,7 @@ export default function CourtDetail() {
           </div>
 
           <button disabled={!selectedTime || !selectedDate} onClick={() => router.push( `/checkout?court=${court.name}&time=${selectedTime}`)}
-            className={`w-full py-3 rounded-lg text-white transition ${ selectedTime ? "bg-teal-600 hover:bg-teal-700" : "bg-gray-300 cursor-not-allowed" }`}>
+            className={`w-full py-3 rounded-lg text-white text-base transition ${ selectedTime ? "bg-teal-600 hover:bg-teal-700" : "bg-gray-300 cursor-not-allowed" }`}>
             Book Schedule →
           </button>
         </div>
