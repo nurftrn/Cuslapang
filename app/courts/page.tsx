@@ -1,10 +1,12 @@
 "use client"
 
+import { Suspense } from "react"
+
 import { useRouter, useSearchParams } from "next/navigation";
 import { supabase } from "@/lib/supabase"
 import { useEffect, useState } from "react"
 
-export default function CourtsPage() {
+function CourtsContent() {
   const router = useRouter()
   const params = useSearchParams()
 
@@ -127,5 +129,13 @@ export default function CourtsPage() {
         </div>
       )}
     </div>
+  )
+}
+
+export default function CourtsPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <CourtsContent />
+    </Suspense>
   )
 }

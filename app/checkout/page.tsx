@@ -2,11 +2,13 @@
 
 export const dynamic = "force-dynamic"
 
+import { Suspense } from "react"
+
 import { useSearchParams, useRouter } from "next/navigation"
 import { useState } from "react"
 import { supabase } from "@/lib/supabase"
 
-export default function CheckoutPage() {
+function CheckoutContent() {
   const params = useSearchParams()
   const router = useRouter()
   const time = params.get("time")
@@ -320,5 +322,13 @@ export default function CheckoutPage() {
         </div>
       </div>
     </div>
+  )
+}
+
+export default function CheckoutPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <CheckoutContent />
+    </Suspense>
   )
 }
