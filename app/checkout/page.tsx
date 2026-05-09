@@ -1,26 +1,35 @@
 "use client"
 
-import { useSearchParams } from "next/navigation"
+import { useSearchParams, useRouter } from "next/navigation"
 import { useState } from "react"
+import { supabase } from "@/lib/supabase"
 
 export default function CheckoutPage() {
   const params = useSearchParams()
+  const router = useRouter()
   const time = params.get("time")
   const courtName = params.get("court")
+  const date = params.get("date")
+  const price = params.get("price")
+  const courtId = params.get("courtId")
 
   const [loading, setLoading] = useState(false)
   const [copied, setCopied] = useState(false)
   const [selectedCategory, setSelectedCategory] = useState("")
   const [selectedPayment, setSelectedPayment] = useState("")
+  const [name, setName] = useState("")
+  const [phone, setPhone] = useState("")
 
   // Format date
-  const selectedDate = new Date()
+  const selectedDate = date
+    ? new Date(date)
+    : new Date()
 
   const day = selectedDate.toLocaleDateString("en-US", {
     weekday: "long",
   })
 
-  const date = selectedDate.toLocaleDateString("en-US", {
+  const formattedDate = selectedDate.toLocaleDateString("en-US", {
     day: "numeric",
     month: "long",
     year: "numeric",
@@ -62,6 +71,41 @@ export default function CheckoutPage() {
     return "-"
   }
 
+  const handleBooking = async () => {
+    if (!selectedPayment || !name || !phone) {
+      alert("Please complete all fields")
+      return
+    }
+
+    setLoading(true)
+
+    const { error } = await supabase
+      .from("bookings")
+      .insert([
+        {
+          court_id: Number(courtId),
+          booking_date: date,
+          start_time: time,
+          duration: 1,
+          user_name: name,
+          phone: phone,
+          payment_method: selectedPayment,
+          payment_status: "pending",
+          booking_status: "waiting",
+          total_price: Number(price),
+        },
+      ])
+    setLoading(false)
+
+    if (error) {
+      console.log(error)
+      alert("Booking failed")
+    } else {
+      alert("Booking success!")
+      router.push("/")
+    }
+  }
+
   return (
     <div className="max-w-[1400px] mx-auto py-10 grid grid-cols-2 gap-8">
 
@@ -83,7 +127,7 @@ export default function CheckoutPage() {
           <span className="text-right font-medium">{day}</span>
 
           <span className="text-gray-500">Date</span>
-          <span className="text-right font-medium">{date}</span>
+          <span className="text-right font-medium">{formattedDate}</span>
 
           <span className="text-gray-500">Time</span>
           <span className="text-right font-medium">{time || "-"}</span>
@@ -98,12 +142,38 @@ export default function CheckoutPage() {
         {/* TOTAL */}
         <div className="flex justify-between font-semibold text-base">
           <span>Total</span>
-          <span>Rp180.000</span>
+          <span>Rp {Number(price)?.toLocaleString("id-ID")}</span>
         </div>
       </div>
 
       {/* RIGHT — PAYMENT */}
       <div className="bg-white rounded-2xl shadow p-6">
+        {/* INPUT USER */}
+        <div className="space-y-4 mb-6">
+          <div>
+            <label className="text-sm text-gray-500">Full Name</label>
+            <input
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              className="w-full border rounded-lg p-3 mt-1"
+              placeholder="Enter your name"
+            />
+          </div>
+
+          <div>
+            <label className="text-sm text-gray-500">Phone Number</label>
+            <input
+              type="text"
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+              className="w-full border rounded-lg p-3 mt-1"
+              placeholder="08xxxxxxxx"
+            />
+          </div>
+        </div>
+
+        {/* PAYMENT METHOD */}
         <h2 className="text-lg font-semibold mb-4">
           Payment Method
         </h2>
@@ -111,14 +181,18 @@ export default function CheckoutPage() {
         {/* CHOOSE CATEGORY */}
         <div className="grid grid-cols-3 gap-4 mb-6">
           {["Bank", "E-Wallet", "QRIS"].map((cat) => {
-            const active = selectedCategory === cat
+            const active = selectedCategory === cat            
 
             return (
               <div
                 key={cat}
                 onClick={() => {
                   setSelectedCategory(cat)
-                  setSelectedPayment("") // reset method
+                  if (cat === "QRIS") {
+                    setSelectedPayment("QRIS")
+                  } else {
+                    setSelectedPayment("")
+                  }
                 }}
                 className={`p-4 rounded-xl text-center cursor-pointer border transition
                 ${
@@ -200,9 +274,18 @@ export default function CheckoutPage() {
 
           <div className="flex justify-between items-center border border-gray-300 p-3 rounded-lg mt-1">
             <span>{getPaymentInfo()}</span>
-            <button className={`text-sm font-medium transition ${copied ? "text-green-600" : "text-blue-500 hover:underline"}`} onClick={handleCopy}>
-              {copied ? "Copied!" : "Copy"}
-            </button>
+            {selectedCategory !== "QRIS" && (
+              <button
+                className={`text-sm font-medium transition ${
+                  copied
+                    ? "text-green-600"
+                    : "text-blue-500 hover:underline"
+                }`}
+                onClick={handleCopy}
+              >
+                {copied ? "Copied!" : "Copy"}
+              </button>
+            )}
           </div>
         </div>
 
@@ -213,7 +296,7 @@ export default function CheckoutPage() {
           </label>
 
           <div className="bg-red-100 text-red-600 p-3 rounded-lg mt-1 flex justify-between">
-            <span>Rp180.000</span>
+            <span>Rp {Number(price)?.toLocaleString("id-ID")}</span>
             <span className="text-sm">Unpaid</span>
           </div>
         </div>
@@ -221,10 +304,10 @@ export default function CheckoutPage() {
         {/* ACTION */}
         <div className="space-y-3 mt-6">
 
-          <button
-            disabled={!selectedPayment} className="w-full bg-teal-600 text-white py-3 rounded-lg hover:bg-teal-700"
+          <button onClick={handleBooking} disabled={!selectedPayment || loading }
+            className="w-full bg-teal-600 text-white py-3 rounded-lg hover:bg-teal-700 disabled:bg-gray-300"
           >
-            Check Status
+            {loading ? "Processing..." : "Pay Now"}
           </button>
 
           <button

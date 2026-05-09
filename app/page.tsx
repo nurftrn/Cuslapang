@@ -1,22 +1,60 @@
 "use client"
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { supabase } from "@/lib/supabase";
 
 export default function Home() {
   const [showModal, setShowModal] = useState(false);
+  const [courts, setCourts] = useState<any[]>([])
+  const [availableCities, setAvailableCities] = useState<string[]>([])
+  const [selectedSport, setSelectedSport] = useState("")
+  const [sports, setSports] = useState<any[]>([])
+
   const router = useRouter();
   
-  // belum pake supabase, jadi hardcode aja dulu
-  const sports = [
-    { name: "Football", icon: "⚽"},
-    { name: "Basketball", icon: "🏀"},
-    { name: "Badminton", icon: "🏸"},
-    { name: "Volleyball", icon: "🏐"},
-    {  name: "Tennis", icon: "🎾"},
-  ]
+  useEffect(() => {
+    const fetchData = async () => {
 
-  const [selectedSport, setSelectedSport] = useState("")
+      // FETCH SPORTS
+      const { data: sportsData, error: sportsError } =
+        await supabase
+          .from("sports")
+          .select("*")
+
+      if (sportsError) {
+        console.log(sportsError)
+      } else {
+        setSports(sportsData || [])
+      }
+
+      // FETCH COURTS
+      const { data: courtsData, error: courtsError } =
+        await supabase
+          .from("courts")
+          .select(`
+            *,
+            sports (
+              name,
+              icon
+            ),
+            sport_centers (
+              cities (
+                name
+              )
+            )
+          `)
+              console.log(courts)
+      if (courtsError) {
+        console.log(courtsError)
+      } else {
+        setCourts(courtsData || [])
+      }
+    }
+
+    fetchData()
+
+  }, [])
 
   return (
     <div className="px-8 md:px-28 py-6">
@@ -39,10 +77,33 @@ export default function Home() {
       </div>
 
       <h1 className="text-xl font-bold mb-4">What do you want to play?</h1>
+      
       {/* CATEGORIES */}
       <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
         {sports.map((sport, s) => (
-          <div key={s} className="bg-gradient-to-br from-teal-200 to-yellow-200 p-6 rounded-2xl shadow hover:shadow-lg hover:scale-105 transition cursor-pointer"  onClick={() => {setSelectedSport(sport.name.toLowerCase()), setShowModal(true)}}>
+          <div key={s} className="bg-gradient-to-br from-teal-200 to-yellow-200 p-6 rounded-2xl shadow hover:shadow-lg hover:scale-105 transition cursor-pointer"  
+            onClick={() => { setSelectedSport(sport.name)
+              // FILTER COURTS SESUAI SPORT
+              const filtered = courts.filter(
+                (court) =>
+                  court.sports?.name?.toLowerCase() ===
+                  sport.name.toLowerCase()
+              )
+              // AMBIL KOTA UNIK
+              const cities = [
+                ...new Set(
+                  filtered
+                    .map(
+                      (court) =>
+                        court.sport_centers?.cities?.name
+                    )
+                    .filter(Boolean)
+                ),
+              ] as string[]
+
+              setAvailableCities(cities)
+              setShowModal(true)
+            }}>
             <h3 className="font-semibold text-base mb-10">
               {sport.name}
             </h3>
@@ -55,26 +116,45 @@ export default function Home() {
 
       {/* FIELD MODAL */}
       {showModal && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50" onClick={() => setShowModal(false)}>
-          <div className="bg-white p-6 rounded-xl w-[300px]" onClick={(e) => e.stopPropagation()}>
+        <div
+          className="fixed inset-0 bg-black/40 flex items-center justify-center z-50"
+          onClick={() => setShowModal(false)}
+        >
+
+          <div
+            className="bg-white p-6 rounded-xl w-[300px]"
+            onClick={(e) => e.stopPropagation()}
+          >
+
             <h2 className="text-lg font-semibold mb-4">
               Select Location
             </h2>
 
             <div className="flex flex-col gap-3">
-              <button onClick={() => router.push(`/courts?city=cibiru&sport=${selectedSport}`)} className="bg-gray-100 p-2 rounded hover:bg-gray-200">
-                Cibiru
-              </button>
-
-              <button onClick={() => router.push(`/courts?city=bandung&sport=${selectedSport}`)} className="bg-gray-100 p-2 rounded hover:bg-gray-200">
-                Bandung
-              </button>
+              {availableCities.map((city, i) => (
+                <button
+                  key={i}
+                  onClick={() =>
+                    router.push(
+                      `/courts?city=${city.toLowerCase()}&sport=${selectedSport.toLowerCase()}`
+                    )
+                  }
+                  className="bg-gray-100 p-2 rounded hover:bg-gray-200"
+                >
+                  {city}
+                </button>
+              ))}
             </div>
 
-            <button onClick={() => setShowModal(false)} className="mt-4 text-sm text-gray-500">
+            <button
+              onClick={() => setShowModal(false)}
+              className="mt-4 text-sm text-gray-500"
+            >
               Cancel
             </button>
+
           </div>
+
         </div>
       )}
     </div>
