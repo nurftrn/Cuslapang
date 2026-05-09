@@ -5,7 +5,7 @@ export const dynamic = "force-dynamic"
 import { Suspense } from "react"
 
 import { useSearchParams, useRouter } from "next/navigation"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { supabase } from "@/lib/supabase"
 
 function CheckoutContent() {
@@ -19,8 +19,11 @@ function CheckoutContent() {
 
   const [loading, setLoading] = useState(false)
   const [copied, setCopied] = useState(false)
+  const [user, setUser] = useState<any>(null)
+
   const [selectedCategory, setSelectedCategory] = useState("")
   const [selectedPayment, setSelectedPayment] = useState("")
+
   const [name, setName] = useState("")
   const [phone, setPhone] = useState("")
 
@@ -88,6 +91,7 @@ function CheckoutContent() {
       .insert([
         {
           court_id: Number(courtId),
+          user_id: user.id,
           booking_date: date,
           start_time: time,
           duration: 1,
@@ -109,6 +113,18 @@ function CheckoutContent() {
       router.push("/")
     }
   }
+
+  useEffect(() => {
+    const getUser = async () => {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser()
+
+      setUser(user)
+    }
+
+    getUser()
+  }, [])
 
   return (
     <div className="max-w-[1400px] mx-auto py-10 grid grid-cols-2 gap-8">
@@ -179,7 +195,7 @@ function CheckoutContent() {
 
         {/* PAYMENT METHOD */}
         <h2 className="text-lg font-semibold mb-4">
-          Payment Method
+          Payment Method {user?.email}
         </h2>
 
         {/* CHOOSE CATEGORY */}

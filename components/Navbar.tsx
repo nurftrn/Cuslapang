@@ -14,7 +14,7 @@ export default function Navbar() {
       <div className="flex gap-6 text-sm text-gray-600">
         <Link href="/">Home</Link>
         <Link href="#">Category</Link>
-        <Link href="#">History</Link>
+        <Link href="/history">History</Link>
         <Link href="#">Contact</Link>
       </div>
 
@@ -22,7 +22,6 @@ export default function Navbar() {
       <button className="bg-teal-700 text-white px-4 py-2 font-semibold rounded-full text-xs hover:bg-teal-800 transition">
         Sign Up
       </button>
-
     </nav>
   )
 }
