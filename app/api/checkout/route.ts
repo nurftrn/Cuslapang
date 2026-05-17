@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from "next/server"
 import { createServerClient } from "@supabase/ssr"
+import { success } from "zod"
 
 export async function POST(request: NextRequest) {
-  const response = NextResponse.next()
+  const response = NextResponse.next({ request })
   const body = await request.json()
 
   const supabase = createServerClient(
@@ -55,5 +56,10 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ success: false, message: error.message }, { status: 500 })
   }
 
-  return NextResponse.json({ success: true })
+  const finalResponse = NextResponse.json({ success:true })
+  response.cookies.getAll().forEach(cookie => {
+    finalResponse.cookies.set(cookie)
+  })
+
+  return finalResponse
 }

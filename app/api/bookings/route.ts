@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server"
 import { createServerClient } from "@supabase/ssr"
 
 export async function GET(request: NextRequest) {
-    const response = NextResponse.next()
+    const response = NextResponse.next({ request })
 
     const supabase = createServerClient(
         process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -56,5 +56,9 @@ export async function GET(request: NextRequest) {
         return NextResponse.json({ bookings: [] }, { status: 500 })
     }
 
-    return NextResponse.json({ bookings: data || [] })
+    const finalResponse = NextResponse.json({ bookings: data || [] })
+        response.cookies.getAll().forEach(cookie => {
+            finalResponse.cookies.set(cookie)
+    })
+    return finalResponse
 }

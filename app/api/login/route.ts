@@ -5,7 +5,7 @@ export async function POST(request: NextRequest) {
   const { email, password } = await request.json()
 
   const response = NextResponse.json({
-    success: false,
+    success: true,
   })
 
   const supabase = createServerClient(
