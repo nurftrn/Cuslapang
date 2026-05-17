@@ -3,10 +3,10 @@
 export const dynamic = "force-dynamic"
 
 import { Suspense } from "react"
-
 import { useSearchParams, useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
 import { supabase } from "@/lib/supabase"
+import { z } from "zod"
 
 function CheckoutContent() {
   const params = useSearchParams()
@@ -20,6 +20,7 @@ function CheckoutContent() {
   const [loading, setLoading] = useState(false)
   const [copied, setCopied] = useState(false)
   const [user, setUser] = useState<any>(null)
+  const [errors, setErrors] = useState<any>({})
 
   const [selectedCategory, setSelectedCategory] = useState("")
   const [selectedPayment, setSelectedPayment] = useState("")
@@ -78,6 +79,16 @@ function CheckoutContent() {
     return "-"
   }
 
+  const schema = z.object({
+    name: z
+      .string()
+      .min(3, "Name must be at least 3 characters"),
+
+    phone: z
+      .string()
+      .min(10, "Phone number must be at least 10 digits"),
+  })
+
   const handleBooking = async () => {
     if (!selectedPayment || !name || !phone) {
       alert("Please complete all fields")
@@ -86,45 +97,46 @@ function CheckoutContent() {
 
     setLoading(true)
 
-    const { error } = await supabase
-      .from("bookings")
-      .insert([
-        {
-          court_id: Number(courtId),
-          user_id: user.id,
-          booking_date: date,
-          start_time: time,
-          duration: 1,
-          user_name: name,
-          phone: phone,
-          payment_method: selectedPayment,
-          payment_status: "pending",
-          booking_status: "waiting",
-          total_price: Number(price),
-        },
-      ])
-    setLoading(false)
+    const validation = schema.safeParse({
+      name,
+      phone,
+    })
 
-    if (error) {
-      console.log(error)
-      alert("Booking failed")
-    } else {
-      alert("Booking success!")
-      router.push("/")
+    if (!validation.success) {
+      setErrors(validation.error.flatten().fieldErrors)
+      setLoading(false)
+      return
     }
+
+    setErrors({})
+
+    try {
+      const res = await fetch("/api/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          courtId,
+          date,
+          time,
+          name,
+          phone,
+          selectedPayment,
+          price,
+        }),
+      });
+      const result = await res.json();
+      if (!res.ok) {
+        alert(result.message || "Booking failed");
+        setLoading(false);
+        return;
+      }
+      alert("Booking success!");
+      router.push("/history");
+    } catch (err) {
+      alert("Booking error");
+    }
+    setLoading(false);
   }
-
-  useEffect(() => {
-    const getUser = async () => {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser()
-
-      setUser(user)
-    }
-
-    getUser()
-  }, [])
 
   return (
     <div className="max-w-[1400px] mx-auto py-10 grid grid-cols-2 gap-8">
@@ -179,6 +191,11 @@ function CheckoutContent() {
               className="w-full border rounded-lg p-3 mt-1"
               placeholder="Enter your name"
             />
+            {errors.name && (
+              <p className="text-red-500 text-sm mt-1">
+                {errors.name[0]}
+              </p>
+            )}
           </div>
 
           <div>
@@ -190,12 +207,17 @@ function CheckoutContent() {
               className="w-full border rounded-lg p-3 mt-1"
               placeholder="08xxxxxxxx"
             />
+            {errors.phone && (
+              <p className="text-red-500 text-sm mt-1">
+                {errors.phone[0]}
+              </p>
+            )}
           </div>
         </div>
 
         {/* PAYMENT METHOD */}
         <h2 className="text-lg font-semibold mb-4">
-          Payment Method {user?.email}
+          Payment Method
         </h2>
 
         {/* CHOOSE CATEGORY */}

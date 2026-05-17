@@ -44,7 +44,6 @@ export default function Home() {
               )
             )
           `)
-              console.log(courts)
       if (courtsError) {
         console.log(courtsError)
       } else {

@@ -9,25 +9,37 @@ export default function LoginPage() {
 
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
-
   const [loading, setLoading] = useState(false)
 
-  const handleLogin = async () => {
-    setLoading(true)
+  const handleLogin = async (e: any) => {
+    e.preventDefault();
+    setLoading(true);
 
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    })
+    try {
+      const res = await fetch("/api/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email, password }),
+      });
 
-    setLoading(false)
+      const result = await res.json();
 
-    if (error) {
-      alert(error.message)
-    } else {
-      alert("Login success!")
-      router.push("/")
+      if (!res.ok) {
+        alert(result.message || "Login failed");
+        setLoading(false);
+        return;
+      }
+
+      alert("Login success!");
+      // Refresh page supaya cookie session terbaca server
+      router.push("/");
+      router.refresh();
+    } catch (err) {
+      alert("Login error");
     }
+    setLoading(false);
   }
 
   return (

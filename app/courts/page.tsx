@@ -2,14 +2,16 @@
 
 import { Suspense } from "react"
 
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { supabase } from "@/lib/supabase"
 import { useEffect, useState } from "react"
 
 function CourtsContent() {
   const router = useRouter()
   const params = useSearchParams()
+  const pathname = usePathname()
 
+  const search = params.get("search") || ""
   const city = params.get("city") || "Unknown City"
   const sport = params.get("sport") || "Unknown Sport"
 
@@ -53,9 +55,22 @@ function CourtsContent() {
     const courtCity =    court.sport_centers?.cities?.name
     const sameCity = !city || courtCity?.toLowerCase() === city.toLowerCase();
     const sameSport = !sport || court.sports?.name?.toLowerCase() === sport.toLowerCase();
+    const sameSearch = !search || court.name?.toLowerCase().includes(search.toLowerCase())
     
-    return sameCity && sameSport
+    return sameCity && sameSport && sameSearch
   })
+
+  const handleSearch = (value: string) => {
+    const searchParams = new URLSearchParams(params)
+
+    if (value) {
+      searchParams.set("search", value)
+    } else {
+      searchParams.delete("search")
+    }
+
+    router.replace(`${pathname}?${searchParams.toString()}`)
+  }
 
   return (
     <div className="px-8 md:px-28 py-6">
@@ -64,6 +79,14 @@ function CourtsContent() {
       <h1 className="text-xl font-bold mb-6">
         {sport.charAt(0).toUpperCase() + sport.slice(1)} Courts in {city.charAt(0).toUpperCase() + city.slice(1)}
       </h1>
+
+      <input
+        type="text"
+        placeholder="Search courts..."
+        defaultValue={search}
+        onChange={(e) => handleSearch(e.target.value)}
+        className="w-full border p-3 rounded-xl mb-6"
+      />
 
       {/* LOADING */}
       {loading && (
